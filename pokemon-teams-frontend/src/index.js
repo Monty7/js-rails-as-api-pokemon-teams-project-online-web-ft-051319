@@ -26,8 +26,9 @@ function listTrainers(json){
 
 mainContainer.addEventListener('click', function(e){
     let trainerID = e.target.attributes[0].nodeValue;
+  //  
     if(e.target.textContent === "Add Pokemon"){
-        //console.log("HELLO")
+        console.log(trainerID)
         fetch(POKEMONS_URL,{
             method: "POST",
             headers: {
@@ -40,21 +41,59 @@ mainContainer.addEventListener('click', function(e){
            // console.log(res);
             return res.json();
         })
-         .then(function(data){
-            //console.log(data);
-             //listTrainers([data]);
-             addPokemon(data)
-         })
+          .then(function(data){
+        //     //console.log(data);
+        //      //listTrainers([data]);
+            if (data.err_message){
+                alert(data.err_message)
+            } else {
+              addPokemon(data, trainerID)
+          }
+        })
+    }
+    if(e.target.textContent === "Release"){
+        let pokeID = e.target.attributes[1].nodeValue;
+        fetch(`${POKEMONS_URL}/${pokeID}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({id: pokeID})
+        })
+            .then(function(){
+                removePoke(e)             
+            })
+
     }
 })
 
-function addPokemon(poke){
-    console.log(poke)
-  //  console.log(e);
-    const pokeContainer = document.querySelector('.card ul');
+function relaseBtn(attr){
+    const liBtn = document.createElement('button'); 
+    liBtn.setAttribute("data-pokemon-id", attr);
+    liBtn.setAttribute("class", "release");
+    liBtn.innerText = "Release";
+    return liBtn;
+}
+
+function removePoke(e){
+    let li = e.target.parentNode;
+    let ul = li.parentNode;
+
+    ul.removeChild(li);
+}
+
+function addPokemon(poke, trainerID){
+    
+   // console.log(trainerID);
+    const pokeContainer = document.querySelector(`div[data-id='${trainerID}'] ul`);
     const pokeLi = document.createElement('li');
-    pokeLi.innerHTML = `<li>${poke.nickname} <button class="release" data-pokemon-id="${poke.id}">Release</button></li>`
+    pokeLi.innerText = `${poke.nickname}`;
+     pokeLi.append(relaseBtn(trainerID));
     pokeContainer.append(pokeLi);
+   
+   // const pokeLi = pokeLi.innerHTML = `<li>${poke.nickname} <button class="release" data-pokemon-id="${poke.id}">Release</button></li>`
+  
  //   pokeContainer.append(`<li>${data.nickname} <button class="release" data-pokemon-id="${data.id}">Release</button></li>`)
 }
 
